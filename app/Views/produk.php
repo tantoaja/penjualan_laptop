@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produk Laptop</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <style>
+        body{
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+
+<?php
+$success = session()->getFlashdata('success');
+$error   = session()->getFlashdata('error');
+?>
+
+<body class="bg-gray-100 text-gray-800 overflow-x-hidden">
+
+<nav class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-lg shadow-md z-50">
+
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+
+        <div>
+            <h1 class="text-2xl font-extrabold text-indigo-600">
+                LaptopStore
+            </h1>
+        </div>
+
+        <ul class="hidden md:flex items-center gap-10 text-lg font-medium text-gray-700">
+
+            <li>
+                <a href="<?= base_url('/') ?>"
+                   class="hover:text-indigo-600 transition duration-300">
+                    Beranda
+                </a>
+            </li>
+
+            <li>
+                <a href="<?= base_url('produk') ?>"
+                   class="hover:text-indigo-600 text-indigo-600">
+                    Produk
+                </a>
+            </li>
+
+            <li>
+                <a href="<?= base_url('ulasan') ?>"
+                   class="hover:text-indigo-600">
+                    Ulasan
+                </a>
+            </li>
+
+            <li>
+                <a href="<?= base_url('tentang') ?>"
+                   class="hover:text-indigo-600">
+                    Tentang
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="flex items-center gap-4">
+
+            <?php if(session()->get('login')): ?>
+
+                <a href="<?= base_url('profile') ?>"
+                   class="hidden md:flex items-center gap-2 border border-indigo-600 text-indigo-600 px-5 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition duration-300">
+
+                    <i class="fa-solid fa-user"></i>
+                    Profil Saya
+
+                </a>
+
+                <a href="<?= base_url('logout') ?>"
+                   class="flex items-center gap-2 bg-red-500 text-white px-5 py-2 rounded-xl hover:bg-red-600 transition duration-300 shadow-lg">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+
+                </a>
+
+            <?php else: ?>
+
+                <button
+                    onclick="openLoginModal()"
+                    class="hidden md:block border border-indigo-600 text-indigo-600 px-5 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition duration-300">
+
+                    Login
+
+                </button>
+
+                <button
+                    onclick="openRegisterModal()"
+                    class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 transition duration-300 shadow-lg">
+
+                    Daftar
+
+                </button>
+
+            <?php endif; ?>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<section class="pt-28 pb-5 bg-white" data-aos="fade-down" data-aos-duration="700">
+
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-4">
+
+        <input
+            id="searchInput"
+            type="text"
+            placeholder="Cari laptop..."
+            class="md:col-span-2 border p-4 rounded-xl">
+
+        <select id="categoryFilter"
+                class="border p-4 rounded-xl">
+
+            <option value="">Semua Kategori</option>
+            <option value="GAM">Gaming</option>
+            <option value="EDT">Editing</option>
+            <option value="OFC">Office</option>
+
+        </select>
+
+    </div>
+
+</section>
+
+<section class="py-10">
+
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+
+        <?php foreach($produk as $p): ?>
+
+        <div class="product-card bg-white p-5 rounded-3xl shadow-lg" 
+             data-name="<?= strtolower($p['nama']) ?>"
+             data-category="<?= $p['kategori'] ?>"
+             data-aos="fade-up"
+             data-aos-duration="600">
+
+            <img src="<?= base_url('assets/img/'.$p['gambar']) ?>"
+            class="h-56 w-full object-cover rounded-xl">
+
+            <span class="text-indigo-600 font-semibold block mt-3">
+                <?= $p['kategori'] ?>
+            </span>
+
+            <h2 class="text-2xl font-bold mt-1">
+                <?= $p['nama'] ?>
+            </h2>
+
+            <p class="text-gray-500 mt-2 text-sm line-clamp-2">
+                <?= $p['deskripsi'] ?>
+            </p>
+
+            <h3 class="text-indigo-600 font-bold text-xl mt-3">
+                Rp <?= number_format($p['harga']) ?>
+            </h3>
+
+            <button
+                type="button"
+                onclick="openDetailModal(
+                    <?= session()->get('login') ? 1 : 0 ?>,
+                    '<?= $p['id_produk'] ?>',
+                    '<?= esc($p['nama']) ?>',
+                    '<?= $p['harga'] ?>'
+                )"
+                class="bg-indigo-600 text-white w-full py-3 rounded-xl mt-4 hover:bg-indigo-700 transition duration-300">
+                Detail
+            </button>
+
+        </div>
+
+        <?php endforeach; ?>
+
+    </div>
+
+</section>
+
+<div id="loginModal"
+     class="fixed inset-0 bg-black/50 hidden justify-center items-center z-[999]">
+
+    <div class="bg-white w-96 rounded-3xl overflow-hidden">
+
+        <div class="bg-indigo-600 text-white p-5 flex justify-between">
+            <h2 class="font-bold">Login</h2>
+            <button type="button" onclick="closeLoginModal()">×</button>
+        </div>
+
+        <form action="<?= base_url('login/process') ?>" method="POST" class="p-6 space-y-4">
+            <input type="email" name="email" placeholder="Email" class="w-full border p-3 rounded-xl">
+            <input type="password" name="password" placeholder="Password" class="w-full border p-3 rounded-xl">
+            <button class="w-full bg-indigo-600 text-white py-3 rounded-xl">Login</button>
+        </form>
+
+    </div>
+</div>
+
+<div id="registerModal"
+     class="fixed inset-0 bg-black/50 hidden justify-center items-center z-[999]">
+
+    <div class="bg-white w-96 rounded-3xl overflow-hidden">
+
+        <div class="bg-indigo-600 text-white p-5 flex justify-between">
+            <h2 class="font-bold">Register</h2>
+            <button type="button" onclick="closeRegisterModal()">×</button>
+        </div>
+
+        <form action="<?= base_url('register/save') ?>" method="POST" class="p-6 space-y-4">
+            <input type="text" name="nama" placeholder="Nama" class="w-full border p-3 rounded-xl">
+            <input type="email" name="email" placeholder="Email" class="w-full border p-3 rounded-xl">
+            <input type="password" name="password" placeholder="Password" class="w-full border p-3 rounded-xl">
+            <button class="w-full bg-indigo-600 text-white py-3 rounded-xl">Daftar</button>
+        </form>
+
+    </div>
+</div>
+
+<div id="buyModal"
+     class="fixed inset-0 bg-black/50 hidden justify-center items-center z-[999]">
+
+    <div class="bg-white w-96 rounded-3xl overflow-hidden">
+
+        <div class="bg-indigo-600 text-white p-5 flex justify-between">
+            <h2 class="font-bold">Pemesanan</h2>
+            <button type="button" onclick="closeBuyModal()">×</button>
+        </div>
+
+        <form action="<?= base_url('order/save') ?>" method="POST" class="p-6 space-y-3">
+            <input type="hidden" name="user_id" value="<?= session()->get('user_id') ?? 0 ?>">
+            <input type="hidden" id="idProduk" name="id_produk" value="">
+            <input type="hidden" id="namaProduk" name="nama_produk" value="">
+            <input type="hidden" id="hargaProduk" name="harga" value="">
+
+            <input type="text" value="<?= session()->get('nama') ?>" readonly class="w-full bg-gray-100 border p-3 rounded-xl">
+            <input type="email" value="<?= session()->get('email') ?>" readonly class="w-full bg-gray-100 border p-3 rounded-xl">
+            <input type="text" name="no_telepon" placeholder="Nomor Telepon" class="w-full border p-3 rounded-xl" required>
+            <textarea name="alamat" placeholder="Alamat" class="w-full border p-3 rounded-xl" required></textarea>
+            <input type="number" name="jumlah" placeholder="Jumlah" class="w-full border p-3 rounded-xl" required>
+
+            <select name="metode_pembayaran" class="w-full border p-3 rounded-xl" required>
+                <option value="">Pilih Metode Pembayaran</option>
+                <option value="cod">COD (Bayar di tempat)</option>
+                <option value="transfer">Transfer Bank</option>
+            </select>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-xl">Checkout</button>
+        </form>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php if($success): ?>
+<script>
+Swal.fire({
+    icon: 'success',
+    title: 'Berhasil!',
+    text: "<?= esc($success) ?>",
+    confirmButtonColor: '#4f46e5'
+});
+</script>
+<?php endif; ?>
+
+<?php if($error): ?>
+<script>
+Swal.fire({
+    icon: 'error',
+    title: 'Gagal!',
+    text: "<?= esc($error) ?>",
+    confirmButtonColor: '#4f46e5'
+});
+</script>
+<?php endif; ?>
+
+<script>
+function openLoginModal(){
+    document.getElementById('loginModal').classList.remove('hidden');
+    document.getElementById('loginModal').classList.add('flex');
+}
+
+function closeLoginModal(){
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('loginModal').classList.remove('flex');
+}
+
+function openRegisterModal(){
+    document.getElementById('registerModal').classList.remove('hidden');
+    document.getElementById('registerModal').classList.add('flex');
+}
+
+function closeRegisterModal(){
+    document.getElementById('registerModal').classList.add('hidden');
+    document.getElementById('registerModal').classList.remove('flex');
+}
+
+function openDetailModal(isLogin, idProduk, name, price){
+    if(isLogin == 0){
+        openLoginModal();
+        return;
+    }
+
+    document.getElementById('buyModal').classList.remove('hidden');
+    document.getElementById('buyModal').classList.add('flex');
+
+    document.getElementById('idProduk').value = idProduk;
+    document.getElementById('namaProduk').value = name;
+    document.getElementById('hargaProduk').value = price;
+}
+
+function closeBuyModal(){
+    document.getElementById('buyModal').classList.add('hidden');
+    document.getElementById('buyModal').classList.remove('flex');
+}
+
+// FILTER SCRIPT
+const searchInput = document.getElementById('searchInput');
+const categoryFilter = document.getElementById('categoryFilter');
+
+function filterProduct(){
+    let search = searchInput.value.toLowerCase();
+
+    document.querySelectorAll('.product-card').forEach(card => {
+        let name = card.dataset.name;
+        let category = card.dataset.category;
+
+        card.style.display =
+            (name.includes(search) &&
+            (categoryFilter.value === "" || categoryFilter.value === category))
+            ? "block"
+            : "none";
+    });
+}
+
+searchInput.addEventListener('keyup', filterProduct);
+categoryFilter.addEventListener('change', filterProduct);
+</script>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    AOS.init({
+        once: true, // Animasi dipicu sekali saat di-scroll ke bawah
+        offset: 100, // Jarak piksel memicu animasi sebelum masuk ke viewport
+    });
+</script>
+
+</body>
+</html>
