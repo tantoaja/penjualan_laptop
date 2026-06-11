@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Controllers;
+
+// Memastikan model dipanggil dengan namespace yang benar
+use App\Models\UserModel;
+
+class Auth extends BaseController
+{
+    // ================= LOGIN =================
+    public function loginProcess()
+    {
+        $session = session();
+        
+        // Memaksa inisialisasi model menggunakan full namespace agar terbaca di Linux InfinityFree
+        $model = new \App\Models\UserModel();
+
+        $email    = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
+
+        $user = $model->where('email', $email)->first();
+
+        if ($user && password_verify($password, $user['password'])) {
+
+            $session->set([
+                'user_id' => $user['id_user'] ?? null,
+                'nama'    => $user['nama'],
+                'email'   => $user['email'],
+                'role'    => $user['role'] ?? 'user', 
+                'login'   => true
+            ]);
+
+            // REDIRECT BERDASARKAN ROLE
+            if (isset($user['role']) && $user['role'] == 'admin') {
+                return redirect()->to('/admin')->with('success', 'Login admin berhasil!');
+            }
+
+            if (isset($user['role']) && $user['role'] == 'kurir') {
+                return redirect()->to('/kurir')->with('success', 'Login kurir berhasil!');
+            }
+
+            return redirect()->to('/')->with('success', 'Login berhasil!');
+        }
+
+        return redirect()->back()->with('error', 'Email atau password salah');
+    }
+
+    // ================= REGISTER =================
+    public function saveRegister()
+    {
+        // Memaksa inisialisasi model menggunakan full namespace agar terbaca di Linux InfinityFree
+        $model = new \App\Models\UserModel();
+
+        $model->insert([
+            'nama'     => $this->request->getPost('nama'),
+            'email'    => $this->request->getPost('email'),
+            'password' => password_hash(
+                $this->request->getPost('password'),
+                PASSWORD_DEFAULT
+            ),
+            'role'     => 'user' // Default role saat mendaftar
+        ]);
+
+        return redirect()->to('/')->with('success', 'Register berhasil! Silakan login.');
+    }
+
+    // ================= LOGOUT =================
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to('/')->with('success', 'Logout berhasil!');
+    }
+}
